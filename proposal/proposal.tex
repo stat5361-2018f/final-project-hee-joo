@@ -1,0 +1,123 @@
+\documentclass[12pt, leqno]{article}
+
+%--------------------------------------------------------------------------------------------------
+% Pac1ages
+\usepackage{amsmath,amsfonts,amsthm,amssymb}
+\usepackage{kotex}
+\usepackage{datetime} \settimeformat{ampmtime} % added package (6/29)
+\usepackage{color}
+\usepackage{float}
+\settimeformat{ampmtime}
+\usepackage{booktabs}   % for table
+\usepackage{siunitx}   % for table
+\usepackage{ctable}
+\usepackage{multirow}
+\usepackage[singlelinecheck=false]{caption} % <-- important caption alignment
+
+%--------------------------------------------------------------------------------------------------
+% Page layout
+\addtolength{\textwidth}{1.2in}
+\addtolength{\oddsidemargin}{-0.6in}
+\addtolength{\textheight}{2.0in}
+\addtolength{\topmargin}{-1.0in}
+\renewcommand \baselinestretch{1.2}
+\parskip = 6pt
+
+%--------------------------------------------------------------------------------------------------
+% Theorems
+\theoremstyle{plain}
+\newtheorem{thm}{Theorem}
+\newtheorem{cor}{Corollary}
+\newtheorem{lem}{Lemma}
+\newtheorem{prop}{Proposition}
+\newtheorem{assume}{\sc Assumption}
+\theoremstyle{definition}
+\newtheorem{defn}{Definition}
+\newtheorem{ex}[defn]{Example}
+\newtheorem{rem}[defn]{Remark}
+\newtheorem{con}[defn]{\sc Condition}
+
+%--------------------------------------------------------------------------------------------------
+% New notations
+\newcommand {\BM} {\begin{bmatrix}}
+\newcommand {\EM} {\end{bmatrix}}
+\newcommand {\bm}[1]{\mbox{\boldmath{$#1$}}}
+\DeclareMathOperator*{\argmax}{argmax}
+\DeclareMathOperator*{\argmin}{argmin}
+\DeclareMathOperator{\var}{Var}
+\DeclareMathOperator{\E}{\mathbb{E}}
+\newcommand{\m}[1]{\mathsf{#1}}
+\newcommand{\bw}{\mathop{\m{bw}}}
+\newcommand{\bs}{\boldsymbol}
+\newcommand{\B}{\m{B}}
+\newcommand{\C}{\m{C}}
+\newcommand{\D}{\m{D}}
+\newcommand{\I}{\m{I}}
+\newcommand{\K}{\m{K}}
+\newcommand{\Q}{\m{Q}}
+\newcommand{\T}{\m{T}}
+\newcommand{\W}{\m{W}}
+\newcommand{\X}{\m{X}}
+\newcommand{\Y}{\m{Y}}
+\newcommand{\Z}{\m{Z}}
+\newcommand{\J}{\mathcal{J}} % 새로운 기호 (6/28)
+\newcommand{\Am}{\mathcal{A}_m} % 새로운 기호 (6/28)
+\newcommand{\Em}{\mathcal{E}_m} % 새로운 기호 (6/28)
+\newcommand {\Pm}{{{\rm Sym}^+(m)}}
+\newcommand{\Sm}{{{\rm Sym}(m)}}
+\newcommand{\e}{{\bm \varepsilon}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand {\DOT}{{\,\cdot\,}}
+\newcommand {\for}{\quad\mbox{for }~}
+\newcommand {\AND}{\quad\mbox{and}\quad}
+\newcommand {\RSS}{{\rm RSS}}
+\newcommand {\av}[1]{{\left| #1 \right|}}
+\newcommand {\IP}[2]{{\left\langle #1, #2 \right\rangle}}
+\newcommand {\norm}[1]{{\left\| #1 \right\|}}
+\newcommand{\pr}[1]{\mathbb{P}\left( #1 \right)}
+\newcommand{\SL}[2]{\Delta\left[ #1, #2 \right]}
+\DeclareMathOperator{\tr}{tr}
+\newcommand {\red}[1]{{\color{red} #1}}
+\newcommand {\blue}[1]{{\color{blue} #1}}
+\newcommand {\Item}[1]{{\noindent\blue{$\bullet$ {#1}}}}
+
+\def \c {\m{c}}
+\def \r {\m{r}}
+\def \S {\m{S}}
+
+%--------------------------------------------------------------------------------------------------
+% Algorithm style
+\floatstyle{ruled}
+\newfloat{al}{!htp}{loa}
+\floatname{al}{Algorithm}
+
+\newcommand{\ed}{\end{document}}
+
+\begin{document}
+
+\iffalse%%
+
+\fi%%
+
+%--------------------------------------------------------------------------------------------------
+\title{Online Updating Method for Multivariate Regression Model}
+\author{{\sc JooChul Lee, HeeSeung Kim}}
+\date{}
+\maketitle
+%--------------------------------------------------------------------------------------------------
+\section{Motivation \& Method}
+%--------------------------------------------------------------------------------------------------
+Online updating is one of the important statistical methods as big data arrives in streams. Standard statistics tool to analyze is challenging for handling big data efficiently. Schifano et al.(2016) developed iterative estimating method without data storage requirements for the linear models and estimating equations. In this project, we will consider the multivariate regression model for the online updating. Pourahmadi (1999) studied the maximum likelihood estimators of a generalised linear model for the covariance matrix. In the researcher's study, mean and covariance of response variables are estimated by using covariates. To estimates parameters corresponding to the mean and covariance, the Newton-Raphson algorithm is used. 
+
+For the online updating in the multivariate regression model, two estimating equations will be considered; one is for the parameters of the mean, and the other is for the parameters of the covariance. We need to consider two estimating equations at the same time to get cumulative estimators. Two steps should be proposed to handle two equations. For the first step, we fix the parameters of the covariance and then estimated the parameters of the mean. Then, the estimated parameters of the mean are fixed to estimate the parameters of the covariance at the second step.
+\\
+%--------------------------------------------------------------------------------------------------
+\section{Reference}
+%--------------------------------------------------------------------------------------------------
+Schifano, E. D., Wu, J., Wang, C., Yan, J.,  Chen, M. H. (2016), `Online Updating of Statistical Inference in the Big Data Setting'  $Technometrics$  58(3), 393-403. \\ \\
+Pourahmadi, M. (2000), `Maximum likelihood estimation of generalised linear models for multivariate normal covariance matrix' $Biometrika$, 87(2), 425-435.
+%--------------------------------------------------------------------------------------------------
+%--------------------------------------------------------------------------------------------------
+\end{document}
+%--------------------------------------------------------------------------------------------------
+%--------------------------------------------------------------------------------------------------

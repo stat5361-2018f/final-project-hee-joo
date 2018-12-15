@@ -1,0 +1,203 @@
+---
+title: "Online Updating for Multivariate Regression Model via Modified Cholesky decomposition"
+# subtitle: "possible subtitle goes here"
+author:
+  - Joochul Lee^[<joochul.lee@uconn.edu>; Ph.D. student at
+    Department of Statistics, University of Connecticut.]
+  - HeeSeung Kim^[<hee-seung.kim@uconn.edu>; Ph.D. student at
+    Department of Electrical & Computer Engineering, University of Connecticut.]
+date: "`r format(Sys.time(), '%d %B %Y')`"
+documentclass: article
+papersize: letter
+fontsize: 11pt
+bibliography: template.bib
+biblio-style: asa
+keywords: Template, R Markdown, bookdown, Data Lab
+# keywords set in YAML header here only go to the properties of the PDF output
+# the keywords that appear in PDF output are set in latex/before_body.tex
+knit: "bookdown::render_book('Exercise2.Rmd', 'bookdown::pdf_document2')"
+output:
+  bookdown::pdf_document2
+abstract: 
+    This is the project for the class. We consider the multivariate regression model. Firstly, we consider the model via Modified Cholesky decomposition using Newton-Raphson algorithm. Using the model, we propose a way to update cumulative coefficient estimates. 
+---
+
+
+```{r setup, echo = FALSE, message = FALSE, warning = FALSE}
+## some utility functions, see the source code for details
+source("utils_template.R")
+
+## specify the packages needed
+pkgs <- c("DT", "leaflet", "splines2", "webshot")
+need.packages(pkgs)
+
+## external data can be read in by regular functions,
+## such as read.table or load
+
+## for latex and html output
+isHtml <- knitr::is_html_output()
+isLatex <- knitr::is_latex_output()
+latex <- ifelse(isLatex, '\\LaTeX\\', 'LaTeX')
+
+## specify global chunk options
+knitr::opts_chunk$set(fig.width = 5, fig.height = 4, dpi = 300,
+                      out.width = "90%", fig.align = "center")
+
+```
+
+
+# Introduction {#sec:intro}
+
+Online updating is one of the important statistical methods as big data arrives in streams. Standard statistics tool to analyze is challenging for handling big data efficiently. Schifano et al.(2016) developed iterative estimating method without data storage requirements for the linear models and estimating equations. In this project, we will consider the multivariate regression model for the online updating. Pourahmadi (1999) studied the maximum likelihood estimators of a generalised linear model for the covariance matrix. In the researcher’s study, mean and covariance of response variables are estimated by using covariates. To estimates parameters corresponding to the mean and covariance, the Newton-Raphson algorithm is used. For the online updating in the multivariate regression model, two estimating equations will be considered; one is for the parameters of the mean, and the other is for the parameters of the covariance. We need to consider two estimating equations at the same time to get cumulative estimators. Two steps should be proposed to handle two equations. For the first step, we fix the parameters of the covariance and then estimated the parameters of the mean. Then, the estimated parameters of the mean are fixed to estimate the parameters of the covariance at the second step.
+
+
+# Model Equations {#sec:math}
+
+Consider the i.i.d sample $\{ \boldsymbol{Y}_i, \boldsymbol{X}_i \}$ for $i = 1, 2, \ldots, n$ where $\bold{Y}_i$, $\bold{X}_i$ is $m$, $p$ and dimensional vectors, respectively. The multivariate regression model is 
+$$ \boldsymbol{Y}_i = \boldsymbol{X}_i \boldsymbol{\beta} + \boldsymbol{\varepsilon}_i$$
+where $\boldsymbol{\beta}$ is the $p$ dimensional vector and $\boldsymbol{\varepsilon}_i \sim N(\boldsymbol{\mu}, \Sigma)$
+
+\subsection{MLE via Modified Cholesky decomposition } 
+
+By the modified Cholesky decomposition, $\Sigma^{-1}$ can be expressed by the following
+$$\Sigma^{-1}(\boldsymbol{\phi}, \boldsymbol{\phi}) =  C(\boldsymbol{\phi})^\prime D(\boldsymbol{\sigma}) C(\boldsymbol{\phi})$$. 
+where $C(\boldsymbol{\phi})$ is lower triangular matrix with 1's as diagonal entries and $D(\boldsymbol{\sigma})$ is diagonal matrix.
+@Mohsen2000 drived Likelyhood funcion as follows. 
+\begin{align*}
+-2 L(\boldsymbol{\beta},\boldsymbol{\phi}, \boldsymbol{\sigma}) &= n \log | \Sigma | + \sum^{n}_{i=1}(y_i - X_i \beta)^\prime \Sigma^{-1}(y_i - X_i \beta)\\ 
+	 		   &= n \sum^p_{i=1} log \sigma^2_t + \sum^n_{i=1} (r_i - \bold{Z}(i) \gamma)^\prime D^{-1}(r_i - \bold{Z}(i) \gamma)
+\end{align*}
+where $\boldsymbol{Z}(i) = (z(i,1), \ldots, z(i,p))^\prime, z(i,t) = \sum^{t-1}_{j=1} r_{ij} z_{tj}$, $x_i, z_t, z_{tj}$ are $p, q, d$ dimensinal vectors, respectively.
+
+For the score function and Fisher information, 
+$$U_1(\boldsymbol{\beta}, \boldsymbol{\phi}) = \sum^n_{i=1} \boldsymbol{X}^\prime_i \Sigma^{-1} \boldsymbol{r}_i, \quad \boldsymbol{I}_{11} =  \sum^n_{i=1} \boldsymbol{X}^\prime_i \Sigma^{-1}\boldsymbol{X}_i$$ 
+$$U_2(\boldsymbol{\beta}, \boldsymbol{\phi}) = \sum^n_{i=1} \boldsymbol{Z}^\prime(i) D^{-1} (\boldsymbol{r}_i -  \boldsymbol{Z}(i) \boldsymbol{\phi}), \quad  \boldsymbol{I}_{22} = n W$$
+where $W = \sum^n_{i=1} \sigma^{-2}_i W_t$, $W_t = \sum^{t-1}_{j=1} \sum^{t-1}_{k=1} \sigma_{jk} z_{tk} z^\prime_{tl}$, and $\boldsymbol{r}_i = \boldsymbol{y}_i - \boldsymbol{X}_i \boldsymbol{\beta} = (r_{1i}, \ldots, r_{mi})^\prime$. $\boldsymbol{Z}(i) =(z(i,1), \ldots, z(i,m))^\prime$ is the $m \times q$ matrix where $z(i,t) = \sum^{t-1}_{j=1}r_{ij}z_{tj}$. Given $\sigma^2_i$, $(\hat{\boldsymbol{\beta}}, \hat{\boldsymbol{\phi}})$ are obtained using Fisher scoring algorithm.
+
+## Special Case  {#sec:theorem}
+
+We can only use one common of covariates to estimate $\boldsymbol{\beta}, \boldsymbol{\phi}$.
+@Cho2013 studied this case. They drived likelyhood funcion as following.
+\begin{align*}
+L(\beta^{\ast}) &= \prod_{i=1}^{n}\frac{1}{(2\pi)^\frac{m}{2}|\Sigma(X^i;\phi^{\ast})|^\frac{1}{2}}
+exp(-\frac{1}{2}(Y^i- X_i \beta))^\top\Sigma(\tau(X^i;\phi^{\ast})^{-1}(Y^i-)))\\
+&=exp(\sum_{i=1}^{n}(-\frac{1}{2}tr[\Sigma(X^i;\phi^{\ast})^{-1}S(Y^i,X^i;\beta))-\frac{1}{2}log|D(\phi)| +\frac{m}{2} log 2\pi)))) 
+\end{align*}
+where $S(\boldsymbol{Y}_i,\boldsymbol{X}_i;\boldsymbol{\beta})) = (\boldsymbol{Y}_i -  \boldsymbol{X}_i \boldsymbol{\beta}_i)(\boldsymbol{Y}_i -  \boldsymbol{X}_i \boldsymbol{\beta}_i)^\prime$
+For the score function and Fisher information, 
+$$U^*_1(\boldsymbol{\beta}, \boldsymbol{\phi}) = \sum^n_{i=1} \boldsymbol{V(X)}^\prime_i \Sigma^{-1} (\boldsymbol{Y}_i -  \boldsymbol{X}_i \boldsymbol{\beta}_i), \quad \boldsymbol{I}^*_{11} =  \sum^n_{i=1} \boldsymbol{V(X)}^\prime_i \Sigma^{-1}\boldsymbol{V(X)}_i$$ 
+$$U^*_2(\boldsymbol{\beta}, \boldsymbol{\phi}) = -\sum^n_{i=1} \boldsymbol{W(X)}^\prime_i[G()], \quad  \boldsymbol{I}^*_{22} = n W$$
+where $W = \sum^n_{i=1} \sigma^{-2}_i W_t$, $W_t = \sum^{t-1}_{j=1} \sum^{t-1}_{k=1} \sigma_{jk} z_{tk} z^\prime_{tl}$, and $\boldsymbol{r}_i = \boldsymbol{y}_i - \boldsymbol{X}_i \boldsymbol{\beta} = (r_{1i}, \ldots, r_{mi})^\prime$. $\boldsymbol{Z}(i) =(z(i,1), \ldots, z(i,m))^\prime$ is the $m \times q$ matrix where $z(i,t) = \sum^{t-1}_{j=1}r_{ij}z_{tj}$. Given $\sigma^2_i$, $(\hat{\boldsymbol{\beta}}, \hat{\boldsymbol{\phi}})$ are obtained using Fisher scoring algorithm.
+ 
+
+\subsection{Online Updating Method} 
+@Schifano2016 fomulated the Online Updated estimates. 
+Let $\{(\boldsymbol{Y}_{ki}, \boldsymbol{X}_{ki}, \boldsymbol{Z}_{ki}, i=1,\ldots,n_k\}$ be the $k^{th}$ subset. The score functions for subset $k$ are
+$$ U_{1,k}(\boldsymbol{\beta},\boldsymbol{\phi})  =  \sum^{n_k}_{i=1} \Psi_1( \boldsymbol{X}_{ki}, \boldsymbol{Z}_{ki},\boldsymbol{\beta},\boldsymbol{\phi})$$
+$$ U_{2,k}(\boldsymbol{\beta},\boldsymbol{\phi}) =  \sum^{n_k}_{i=1} \Psi_2( \boldsymbol{X}_{ki}, \boldsymbol{Z}_{ki},\boldsymbol{\beta},\boldsymbol{\phi})$$
+Define $\boldsymbol{A}_{1,k} = \sum^{n_k}_{i=1}\dfrac{\partial\Psi_1( \boldsymbol{X}_{ki},\boldsymbol{\beta},\boldsymbol{\phi})}{\partial \boldsymbol{\beta}}$ and
+$\boldsymbol{A}_{2,k} = \sum^{n_k}_{i=1}\dfrac{\partial\Psi_2( \boldsymbol{X}_{ki},\boldsymbol{\beta},\boldsymbol{\phi})}{\partial \boldsymbol{\phi}}$
+A Taylor Expansion of $-U_{1,k}(\boldsymbol{\beta},\boldsymbol{\phi}),U_{2,k}(\boldsymbol{\beta},\boldsymbol{\phi})$ at $\hat{\boldsymbol{\beta}}_{n_k,k}, \hat{\boldsymbol{\phi}}_{n_k,k}$ respectively is given by
+$$-U_{1,k}(\boldsymbol{\beta},\boldsymbol{\phi}) = \boldsymbol{A}_{1,k} (\boldsymbol{\beta} - \hat{\boldsymbol{\beta}}_{n_k,k}) +\boldsymbol{R}_1$$
+$$-U_{2,k}(\boldsymbol{\beta},\boldsymbol{\phi}) = \boldsymbol{A}_{2,k} (\boldsymbol{\phi} - \hat{\boldsymbol{\phi}}_{n_k,k}) +\boldsymbol{R}_2$$
+The cumulative coefficient estimates are
+\begin{align}
+ \hat{\boldsymbol{\beta}}_K &= ( \sum^K_{k=1}  \boldsymbol{A}_{1,k}(\phi_k))^{-1}  \sum^K_{k=1}  \boldsymbol{A}_{1,k} \hat{\boldsymbol{\beta}}_{n_k,k} \\
+ \hat{\boldsymbol{\phi}}_K &= (\sum^K_{k=1}  \boldsymbol{A}_{2,k}(\beta_k))^{-1}  \sum^K_{k=1}  \boldsymbol{A}_{2,k} \hat{\boldsymbol{\phi}}_{n_k,k} 
+\end{align}
+
+For $\beta_k$ and $\phi_k$ in ($\boldsymbol{A}_{1,k}(\phi_k),\boldsymbol{A}_{2,k}(\beta_k))$), we can use $\hat{\boldsymbol{\beta}}_{n_k,k}$ and $\hat{\boldsymbol{\phi}}_{n_k,k}$
+
+Thus, we propose the cumulative coefficient estimators.
+\begin{align}
+ \hat{\boldsymbol{\beta}}_K &= ( \sum^K_{k=1}  \boldsymbol{A}_{1,k}(\boldsymbol{\phi}_{n_k,k}))^{-1}  \sum^K_{k=1}  \boldsymbol{A}_{1,k} \hat{\boldsymbol{\beta}}_{n_k,k} \\
+ \hat{\boldsymbol{\phi}}_K &= (\sum^K_{k=1}  \boldsymbol{A}_{2,k}(\hat{\boldsymbol{\beta}}_{n_k,k}))^{-1}  \sum^K_{k=1}  \boldsymbol{A}_{2,k} \hat{\boldsymbol{\phi}}_{n_k,k} 
+\end{align}
+
+\newpage
+# Simulation Study
+
+For the simulation study, we used two block sample sizes, $n_1$, $n_2$ to generate observation $\boldsymbol{Y}_i$ and $X_i$ for $i = 1, ..., 1000$. $X_i$ is generated from normal distribution with mean 1, and variance 1. And $\boldsymbol{Y}_i$ is generated from normal $\boldsymbol{\mu}_i$ and $\boldsymbol{\Sigma}_i$ where $\boldsymbol{\mu}_i = (\beta_1 + \beta_2 x_i \; \beta_1 + \beta_2 x_i)^\prime$ and $\boldsymbol{\Sigma}^{-1}_i = CC^\prime$, 
+$$C = \begin{bmatrix} \phi_{1,1} + \phi_{1,2} x_i &0 \\ \phi_{2,1} + \phi_{2,2} x_i&\phi_{3,1} + \phi_{3,2} x_i \end{bmatrix}.$$
+We set 
+$$(\beta_1, \beta_2, \beta_3, \beta_4 ) = (0.1, 0.3, 0.2, 0.3)$$
+$$(\phi_{1,1}, \phi_{1,2}, \phi_{2,1}, \phi_{2,2}, \phi_{3,1}, \phi_{3,2}) = (0.1,0.1,0.2,0.2,0.1,0.2).$$For cumulative coefficient estimates, first block sample size $n_1$ and second block sample size $n_2$ are 1000 and the repeat is 100.
+
+```{r, echo = FALSE}
+library(mvtnorm)
+DATA_GENERATION = function(n, beta,  phi)
+{   
+   X = rnorm(n, 0, 1)
+   Dat = cbind(1, X)
+   Y = matrix(0,n,2)
+   for(i in 1:n)
+   {   
+      Mu =  Dat %*% beta
+      tau = Dat %*% phi[,2] 
+      diag.phi1 = exp(Dat %*% phi[,1])
+      diag.phi2 = exp(Dat %*% phi[,3])
+      C = diag(c(diag.phi1[i],diag.phi2[i]))
+      C[lower.tri(C)] = tau[i]
+      Covari = solve( C %*% t(C))
+      Y[i,] = rmvnorm(1,mean = Mu[i,], sigma = Covari)
+   }
+   return(list( Dat= Dat, Y=Y))
+}   
+set.seed(12345)
+beta = matrix(c(0.1, 0.3, 0.2, 0.3),2,2)
+phi = matrix(c(0.1, 0.1,0.2, 0.2,0.1,0.2),2,3)
+n = 1000
+DATA = DATA_GENERATION(n, beta, phi)
+Y1 = DATA$Y[,1]; Y2 = DATA$Y[,2]; X = DATA$Dat[,2]
+pairs(~Y1 + Y2 + X)
+```
+The plot show the relationship between response variables and a predictor from the generated one dataset. When X incease, Y1 and Y2 tend to incease. Also, when X is increased, the variance of Y2 look like decrease at a point $x$.
+
+The simulation result is in the table 1 and 2. For the simulation, we used the initial values as follows.
+$$(\beta_1, \beta_2, \beta_3, \beta_4 ) = (0.1, 0.1, 0.1, 0.1)$$
+$$(\phi_{1,1}, \phi_{1,2}, \phi_{2,1}, \phi_{2,2}, \phi_{3,1}, \phi_{3,2}) = (0.1,0.1,0.1,0.1,0.1,0.1).$$
+When you look at the tables, the average cumulative coefficient estimates look like very close to the true value. When we focus on the estimates corresponding the covariate, the standard errors of estimates for mean are very similar. The standard errors of estimates for variance are a little different. Standar error for $(\phi_{2,1}$ is higher than for $\phi_{1,2}$ and $\phi_{3,2}$.
+
+\begin{table}[!htb]
+\caption{Result for $\beta$'s}
+\begin{center}
+    \begin{tabular}{c | c c c c  } 
+      \hline
+       &$\beta_1$ & $\beta_2$ & $\beta_3$ & $\beta_4$  \\ \hline
+      Ture value & 0.1 & 0.3 & 0.2 & 0.3\\
+      Average Cumulative Coefficient Estimates & 0.0998& 0.2925 & 0.1979 & 0.2920\\
+      Standard Error & 0.0205& 0.0451 & 0.0287 & 0.04197\\
+            \hline
+    \end{tabular}
+\end{center}
+\end{table}
+
+\begin{table}[!htb]
+\caption{Result for $\phi$'s}
+\begin{center}
+    \begin{tabular}{c | c c c c c c } 
+      \hline
+       &$\phi_{1,1}$& $\phi_{1,2}$ & $\phi_{2,1}$ &$\phi_{2,2}$ & $\phi_{3,1}$ & $\phi_{3,2}$  \\ \hline
+      Ture value & 0.1 & 0.1 & 0.2 & 0.2 & 0.1&0.2\\
+      Average Cumulative Coefficient Estimates & 0.10234& 0.1005 & 0.1938 & 0.1961&0.1040&0.1897\\
+      Standard Error & 0.0149& 0.01482 & 0.0286 & 0.0249 & 0.0159&0.01628\\
+            \hline
+    \end{tabular}
+\end{center}
+\end{table}
+
+# Summary {#sec:summary}
+
+In summary, we proposed one method to update estimates in data stream under multivatiate regression model. @Schifano2016 developed cumulative coefficient estimates for the linear models and estimating equations. In this project, we will consider the multivariate regression model for the online updating. @Mohsen2000 studied the maximum likelihood estimators of a generalised linear model for the covariance matrix. In this project, mean and covariance of response variables are estimated by using a covariate. To estimates parameters corresponding to the mean and covariance, the Newton-Raphson algorithm is used. We considered two estimating equations to update cumulative estimators. Firstly, we fixed the parameters of the covariance and then estimated the parameters of the mean. Then, the estimated parameters of the mean are fixed to estimate the parameters of the covariance.
+Through the simulation study, we checked the perfomance of the proposed method. As the result, the average of cumulative coefficient estimates are very close to the true values.
+
+# Code
+We submit two R code. $Simulation.R$ code is for the result of simulation study and $Project.R$ code is used by $Simulation.R$. You can check the result in tables by $Simulation.R$. 
+
+
+[pandoc]: http://pandoc.org/
+[pandocManual]: http://pandoc.org/MANUAL.html
+[repo]: https://github.com/wenjie2wang/datalab-templates
+[taskView]: https://cran.r-project.org/web/views/ReproducibleResearch.html
+[shiny.io]: https://www.shinyapps.io/
+[wenjie-stat.shinyapps]: https://wwenjie-stat.shinyapps.io/minisplines2
